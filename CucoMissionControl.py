@@ -20,30 +20,35 @@ def SendCommand(command):
     s.connect((host, port))
     s.send(str.encode(command))
     reply = s.recv(1024)
-    print("The response was:")
     print(reply.decode('utf-8'))
     s.close()
 
 #Detects Forward, backward, left or right commands and sends them to SendCommand
 #Test method
-def Move():
-    command = 'REPEAT hi'
-    SendCommand(command)
-#TODO def Forward, backwards, left, right
+# def Move():
+#     command = 'REPEAT hi'
+#     SendCommand(command)
+
+#Move commands
 def forward():
     print("w was pressed")
-
+    command = 'FORWARD'
+    SendCommand(command)
 
 def right():
     print("d was pressed")
-
+    command = 'RIGHT'
+    SendCommand(command)
 
 def left():
     print("a was pressed")
-
+    command = 'LEFT'
+    SendCommand(command)
 
 def back():
     print("s was pressed")
+    command = 'BACK'
+    SendCommand(command)
 
 #Key detection and destribution to corresponding method
 def key(event):
@@ -59,6 +64,7 @@ def key(event):
     else:
         print("Invalid key")
 
+# Click detection
 def callback(event):
     frame.focus_set()
     print("clicked at", event.x, event.y)
@@ -87,6 +93,7 @@ def DisconnectHP():
     frame.destroy()
     command = "KILL"
     SendCommand(command)
+    print("Client has disconnected from Server")
 
 
 def batteryStatus():
