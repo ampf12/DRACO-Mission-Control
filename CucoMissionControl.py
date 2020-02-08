@@ -71,7 +71,7 @@ def callback(event):
 
 #Connect button reveals moving commands
 def ConnectHP():
-    #Arrow buttons apprear
+    #Arrow buttons appear
     # global move
     # move = Button(root, text="Move", command=Move)
     # move.place(x=365, y=200)
