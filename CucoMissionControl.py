@@ -30,10 +30,34 @@ def Move():
     command = 'REPEAT hi'
     SendCommand(command)
 #TODO def Forward, backwards, left, right
+def forward():
+    print("w was pressed")
 
-#Key detection
+
+def right():
+    print("d was pressed")
+
+
+def left():
+    print("a was pressed")
+
+
+def back():
+    print("s was pressed")
+
+#Key detection and destribution to corresponding method
 def key(event):
-    print( "pressed", repr(event.char))
+    # print("pressed", repr(event.char)
+    if repr(event.char) == "'w'":
+        forward()
+    elif repr(event.char) == "'d'":
+        right()
+    elif repr(event.char) == "'a'":
+        left()
+    elif repr(event.char) == "'s'":
+        back()
+    else:
+        print("Invalid key")
 
 def callback(event):
     frame.focus_set()
@@ -42,9 +66,9 @@ def callback(event):
 #Connect button reveals moving commands
 def ConnectHP():
     #Arrow buttons apprear
-    global move
-    move = Button(root, text="Move", command=Move)
-    move.place(x=365, y=200)
+    # global move
+    # move = Button(root, text="Move", command=Move)
+    # move.place(x=365, y=200)
 
     #Key detection code
     global frame
@@ -56,9 +80,10 @@ def ConnectHP():
     frame.bind("<Button-1>", callback)
     frame.pack()
 
+
 #Disconnect button Kills server
 def DisconnectHP():
-    move.destroy()
+    # move.destroy()
     frame.destroy()
     command = "KILL"
     SendCommand(command)
