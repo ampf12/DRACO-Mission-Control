@@ -10,18 +10,14 @@ root.geometry("800x600")
 root.title("Mission Control")
 root.configure(background="black")
 connectStatus = False
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 #Sends command by openning a conection with server, executing and closing
 def SendCommand(command):
-    host = '192.168.137.2'
-    port = 5560
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((host, port))
+    global s
     s.send(str.encode(command))
     reply = s.recv(1024)
     print(reply.decode('utf-8'))
-    s.close()
 
 #Detects Forward, backward, left or right commands and sends them to SendCommand
 #Test method
@@ -50,6 +46,11 @@ def back():
     command = 'BACK'
     SendCommand(command)
 
+def claw():
+    print("c was pressed")
+    command = 'CLAW'
+    SendCommand(command)
+
 #Key detection and destribution to corresponding method
 def key(event):
     # print("pressed", repr(event.char)
@@ -61,6 +62,8 @@ def key(event):
         left()
     elif repr(event.char) == "'s'":
         back()
+    elif repr(event.char) == "'c'":
+        claw()
     else:
         print("Invalid key")
 
@@ -75,7 +78,10 @@ def ConnectHP():
     # global move
     # move = Button(root, text="Move", command=Move)
     # move.place(x=365, y=200)
-
+    host = '192.168.137.2'
+    port = 5560
+    global s
+    s.connect((host, port))
     #Key detection code
     global frame
     frame = Frame(root, width=50, height=50)
@@ -83,18 +89,20 @@ def ConnectHP():
     frame.bind("<a>", key)
     frame.bind("<s>", key)
     frame.bind("<d>", key)
+    frame.bind("<c>", key)
     frame.bind("<Button-1>", callback)
     frame.pack()
 
 
 #Disconnect button Kills server
 def DisconnectHP():
+    global s
     # move.destroy()
     frame.destroy()
     command = "KILL"
     SendCommand(command)
     print("Client has disconnected from Server")
-
+    s.close()
 
 def batteryStatus():
     global connectStatus
