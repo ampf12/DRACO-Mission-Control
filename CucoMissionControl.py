@@ -19,11 +19,7 @@ def SendCommand(command):
     reply = s.recv(1024)
     print(reply.decode('utf-8'))
 
-#Detects Forward, backward, left or right commands and sends them to SendCommand
-#Test method
-# def Move():
-#     command = 'REPEAT hi'
-#     SendCommand(command)
+#Detects Forward, backward, left, right, open claw, close claw and check commands and sends them to SendCommand
 
 #Move commands
 def forward():
@@ -46,12 +42,25 @@ def back():
     command = 'BACK'
     SendCommand(command)
 
-def claw():
+#Close claw
+def close():
     print("c was pressed")
-    command = 'CLAW'
+    command = 'CLOSE'
     SendCommand(command)
 
-#Key detection and destribution to corresponding method
+# Open claw
+def openC():
+    print("x was pressed")
+    command = 'OPEN'
+    SendCommand(command)
+
+# Command does a series of movements to check if its, connected and servos are good
+def check():
+    print("e was pressed")
+    command = 'CHECK'
+    SendCommand(command)
+
+#Key detection and distribution to corresponding method
 def key(event):
     # print("pressed", repr(event.char)
     if repr(event.char) == "'w'":
@@ -63,7 +72,11 @@ def key(event):
     elif repr(event.char) == "'s'":
         back()
     elif repr(event.char) == "'c'":
-        claw()
+        close()
+    elif repr(event.char) == "'x'":
+        openC()
+    elif repr(event.char) == "'e'":
+        check()
     else:
         print("Invalid key")
 
@@ -82,6 +95,7 @@ def ConnectHP():
     port = 5560
     global s
     s.connect((host, port))
+    
     #Key detection code
     global frame
     frame = Frame(root, width=50, height=50)
@@ -90,6 +104,8 @@ def ConnectHP():
     frame.bind("<s>", key)
     frame.bind("<d>", key)
     frame.bind("<c>", key)
+    frame.bind("<x>", key)
+    frame.bind("<e>", key)
     frame.bind("<Button-1>", callback)
     frame.pack()
 
