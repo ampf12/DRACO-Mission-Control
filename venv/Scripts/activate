@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\Andres\PycharmProjects\Client-Server-Pi\venv"
+VIRTUAL_ENV="C:\Users\PC\PycharmProjects\DRACO-Mission-Control\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

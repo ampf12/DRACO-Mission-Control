@@ -1,6 +1,18 @@
 # Importing tkinter module
 from tkinter import *
 import socket
+from Network_Check import connect as socket_connect
+from Network_Check import ping
+from time import sleep
+
+
+def rgb(color, *args):
+    if len(args) == 2:
+        color = color, args[0], args[1]
+    return "#%02x%02x%02x" % color
+
+
+connected = False
 
 # creating Tk window
 root = Tk()
@@ -12,148 +24,154 @@ root.configure(background="black")
 connectStatus = False
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-#Sends command by openning a conection with server, executing and closing
+key_commands = {
+    "w": "FORWARD",
+    "a": "LEFT",
+    "s": "BACK",
+    "d": "RIGHT",
+    "c": "CLOSE",
+    "x": "OPEN",
+    "e": "CHECK"
+}
+
+
+# Sends command by openning a conection with server, executing and closing
 def SendCommand(command):
     global s
+    if not connected:
+        return
+    print(f"USER>> {command}")
     s.send(str.encode(command))
     reply = s.recv(1024)
-    print(reply.decode('utf-8'))
+    print(f"PI>> {reply.decode('utf-8')}")
 
-#Detects Forward, backward, left, right, open claw, close claw and check commands and sends them to SendCommand
 
-#Move commands
-def forward():
-    print("w was pressed")
-    command = 'FORWARD'
-    SendCommand(command)
-
-def right():
-    print("d was pressed")
-    command = 'RIGHT'
-    SendCommand(command)
-
-def left():
-    print("a was pressed")
-    command = 'LEFT'
-    SendCommand(command)
-
-def back():
-    print("s was pressed")
-    command = 'BACK'
-    SendCommand(command)
-
-#Close claw
-def close():
-    print("c was pressed")
-    command = 'CLOSE'
-    SendCommand(command)
-
-# Open claw
-def openC():
-    print("x was pressed")
-    command = 'OPEN'
-    SendCommand(command)
-
-# Command does a series of movements to check if its, connected and servos are good
-def check():
-    print("e was pressed")
-    command = 'CHECK'
-    SendCommand(command)
-
-#Key detection and distribution to corresponding method
+# Key detection and distribution to corresponding method
 def key(event):
-    # print("pressed", repr(event.char)
-    if repr(event.char) == "'w'":
-        forward()
-    elif repr(event.char) == "'d'":
-        right()
-    elif repr(event.char) == "'a'":
-        left()
-    elif repr(event.char) == "'s'":
-        back()
-    elif repr(event.char) == "'c'":
-        close()
-    elif repr(event.char) == "'x'":
-        openC()
-    elif repr(event.char) == "'e'":
-        check()
+    if event is None:
+        return
+    key_press = ''
+    if not type(event) == str:
+        if event.char is None:
+            return
+        else:
+            key_press: str = event.char.lower()
+    else:
+        key_press = event.lower()
+    if key_press in key_commands:
+        print(f'Key Press:\t{key_press.upper()}')
+        SendCommand(key_commands[key_press])
     else:
         print("Invalid key")
 
+
 # Click detection
 def callback(event):
-    frame.focus_set()
-    print("clicked at", event.x, event.y)
+    print("Mouse Position:", event.x, event.y)
 
-#Connect button reveals moving commands
+
+frame = Frame(root, width=50, height=50, bg=rgb(20, 20, 20))
+frame.bind("<w>", key)
+frame.bind("<a>", key)
+frame.bind("<s>", key)
+frame.bind("<d>", key)
+frame.bind("<c>", key)
+frame.bind("<x>", key)
+frame.bind("<e>", key)
+frame.bind("<Button-1>", callback)
+
+
+# Connect button reveals moving commands
 def ConnectHP():
-    #Arrow buttons appear
+    # Arrow buttons appear
     # global move
     # move = Button(root, text="Move", command=Move)
     # move.place(x=365, y=200)
     host = '192.168.137.2'
     port = 5560
-    global s
-    s.connect((host, port))
-    
-    #Key detection code
-    global frame
-    frame = Frame(root, width=50, height=50)
-    frame.bind("<w>", key)
-    frame.bind("<a>", key)
-    frame.bind("<s>", key)
-    frame.bind("<d>", key)
-    frame.bind("<c>", key)
-    frame.bind("<x>", key)
-    frame.bind("<e>", key)
-    frame.bind("<Button-1>", callback)
-    frame.pack()
+    global s, connected
+    status.config(text='Status: Connecting...')
+    print(f"Pinging ip: {host}")
+    p = ping(host, 6)
+    if p[0]:
+        print("PING SUCCESSFUL!")
+        print(f"Checking port: {port}")
+        connection = socket_connect(host, port)
+        if connection:
+            s.connect((host, port))
+            connected = True
+        else:
+            print("NO CONNECTION!")
+            status.config(text='Status: Not Connected')
+    else:
+        print("PING FAILED!")
+        status.config(text='Status: Not Connected')
 
 
-#Disconnect button Kills server
+# Disconnect button Kills server
 def DisconnectHP():
     global s
     # move.destroy()
-    frame.destroy()
+    # frame.destroy()
     command = "KILL"
     SendCommand(command)
     print("Client has disconnected from Server")
     s.close()
 
+
 def batteryStatus():
     global connectStatus
 
 
-# Connect button
-connect = Button(root, text="Connect", fg="Green", command=ConnectHP)
-connect.place(x=370, y=5)
+# Disconnect button
 
-#Disconnect button
-disconnect = Button(root, text="Disconnect", fg="Red", command=DisconnectHP)
-disconnect.place(x=365, y=60)
+class Controls:
+    def __init__(self, x: int, y: int):
+        self.forward = Button(root, text='/\\', bg='black', fg='white', command=lambda: key('w'))
+        self.backward = Button(root, text='\\/', bg='black', fg='white', command=lambda: key('s'))
+        self.right = Button(root, text='>', bg='black', fg='white', command=lambda: key('d'))
+        self.left = Button(root, text='<', bg='black', fg='white', command=lambda: key('a'))
+
+        self.forward.place(x=x, y=y, width=32, height=32)
+        self.backward.place(x=x, y=y + 64, width=32, height=32)
+        self.right.place(x=x + 32, y=y + 32, width=32, height=32)
+        self.left.place(x=x - 32, y=y + 32, width=32, height=32)
+
+    def set_position(self, x: int, y: int):
+        self.forward.place(x=x, y=y, width=32, height=32)
+        self.backward.place(x=x, y=y + 64, width=32, height=32)
+        self.right.place(x=x + 32, y=x + 32, width=32, height=32)
+        self.left.place(x=x - 32, y=x + 32, width=32, height=32)
+
 
 # Battery Level label
 battery = Label(root, text="Battery Level: ", bg="black", fg="white")
-battery.place(x=0, y=5)
+battery.place(x=0, y=32)
 
 # Status Label widget
 status = Label(root, text="Status: Not Connected", bg="black", fg="white")
-status.place(x=600, y=5)
+status.place(x=800 - 128, y=0)
 
-#Time passed label
+# Time passed label
 timeElapsed = Label(root, text="Time Elapsed: 00:00", bg="black", fg="white")
-timeElapsed.place(x=0, y=60)
+timeElapsed.place(x=0, y=64)
 
-#Object detecting label
-objects = Label(root, text="Object Detecting:", bg="black", fg="white")
-objects.place(x=600, y=60)
+# Object detecting label
+# objects = Label(root, text="Object Detecting:", bg="black", fg="white")
+# objects.place(x=600, y=60)
 
-#Camera feed
+# Camera feed
 feed = Label(root, text="Camera Feed", bg="black", fg="white")
-feed.place(x=360, y=130)
+feed.place(x=360, y=128)
 
+connect = Button(root, text="Connect", bg=rgb(0, 20, 0), fg="Green", command=ConnectHP)
+connect.place(x=0, y=0, width=64)
+disconnect = Button(root, text="Disconnect", bg=rgb(20, 0, 0), fg="Red", command=DisconnectHP)
+disconnect.place(x=64, y=0, width=80)
+frame.focus_set()
+frame.place(x=200, y=150, width=400, height=400)
+controls = Controls(700 - 16, 550 - 96)
 
-# infinite loop which is required to
-# run tkinter program infinitely
-# until an interrupt occurs
+# camera_frame = Label(root, bg=rgb(20,20,20))
+# camera_frame.place(x=200,y=150,width=400,height=400)
 root.mainloop()
