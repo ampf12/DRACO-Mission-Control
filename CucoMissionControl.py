@@ -60,9 +60,15 @@ def key(event):
         key_press = event.lower()
     if key_press in key_commands:
         print(f'Key Press:\t{key_press.upper()}')
+        text.config(state=NORMAL)
+        text.insert('1.0', f'Key Press:\t{key_press.upper()}\n')
+        text.config(state=DISABLED)
         SendCommand(key_commands[key_press])
     else:
         print("Invalid key")
+        text.config(state=NORMAL)
+        text.insert('1.0', "Invalid key\n")
+        text.config(state=DISABLED)
 
 
 # Click detection
@@ -160,6 +166,10 @@ timeElapsed.place(x=0, y=64)
 # objects = Label(root, text="Object Detecting:", bg="black", fg="white")
 # objects.place(x=600, y=60)
 
+# Console
+console = Label(root, text="Console", bg="black", fg="white")
+console.place(x=650, y=60)
+
 # Camera feed
 feed = Label(root, text="Camera Feed", bg="black", fg="white")
 feed.place(x=360, y=128)
@@ -170,6 +180,9 @@ disconnect = Button(root, text="Disconnect", bg=rgb(20, 0, 0), fg="Red", command
 disconnect.place(x=64, y=0, width=80)
 frame.focus_set()
 frame.place(x=200, y=150, width=400, height=400)
+text = Text(root, width=40, height=10, bg=rgb((25, 25, 25)), fg="white", font=("Courier New", 9), highlightthickness=0)
+text.place(x=630, y=150, height=290, width=150)  # x=200 #w = 524
+text.config(state=DISABLED)
 controls = Controls(700 - 16, 550 - 96)
 
 # camera_frame = Label(root, bg=rgb(20,20,20))
